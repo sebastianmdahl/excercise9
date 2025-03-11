@@ -9,7 +9,7 @@ import "ol/ol.css";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { Draw } from "ol/interaction";
-
+import GeoJSON from "ol/format/GeoJSON";
 import { Style, Fill, Stroke, Circle as CircleStyle } from "ol/style";
 
 // By calling the "useGeographic" function in OpenLayers, we tell that we want coordinates to be in degrees
@@ -41,6 +41,20 @@ const vectorLayer = new VectorLayer({
   style: pointStyle,
 });
 map.addLayer(vectorLayer);
+
+const savePoints = () => {
+  const features = vectorSource.getFeatures();
+  const geoJson = new GeoJSON().writeFeatures(features);
+  localStorage.setItem("savedPoints", geoJson);
+};
+
+const loadPoints = () => {
+  const savedPoints = localStorage.getItem("savedPoints");
+  if (savedPoints) {
+    const features = new GeoJSON().readFeatures(savedPoints);
+    vectorSource.addFeatures(features);
+  }
+};
 // A functional React component
 export function Application() {
   // `useRef` bridges the gap between JavaScript functions that expect DOM objects and React components
@@ -49,6 +63,8 @@ export function Application() {
   // map React component
   useEffect(() => {
     map.setTarget(mapRef.current!);
+    loadPoints();
+    vectorSource.on("change", savePoints);
   }, []);
 
   const enableDrawing = () => {
