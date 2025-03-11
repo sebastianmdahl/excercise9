@@ -74,8 +74,15 @@ export function Application() {
     });
     map.addInteraction(draw);
 
-    vectorSource.on("addfeature", () => {
+    draw.on("drawend", (event) => {
       map.removeInteraction(draw);
+
+      const feature = event.feature; // ✅ Get the drawn feature
+      const name = prompt("Enter a name for this point:", "My Location"); // ✅ Ask user for name
+
+      if (name) {
+        feature.setProperties({ name }); // ✅ Assign name property (triggers re-render)
+      }
     });
   };
 
